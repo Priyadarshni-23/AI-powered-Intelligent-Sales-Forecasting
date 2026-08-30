@@ -10,7 +10,7 @@ from database.models import Lead, OutreachCampaign
 
 router = APIRouter(prefix="/email", tags=["Email Outreach"])
 
-# ---------- Pydantic Schemas ----------
+#Pydantic Schemas
 
 class OutreachCampaignResponse(BaseModel):
     id: int
@@ -47,7 +47,7 @@ class EmailGenerateRequest(BaseModel):
     current_crm: Optional[str] = None
 
 
-# ---------- Industry-specific prompt strategies ----------
+#  Industry-specific prompt strategies
 
 INDUSTRY_STRATEGY = {
     "technology": "Emphasize scalability, engineering velocity, and reducing technical debt. Use a direct, technically credible tone.",

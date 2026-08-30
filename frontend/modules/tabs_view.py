@@ -152,13 +152,13 @@ def render_dashboard_tab():
 
 
 NAV_ITEMS = [
-    ("leads", "Leads"),
-    ("add_lead", "Add Lead"),
-    ("company", "Company Intelligence"),
-    ("outreach", "Outreach"),
-    ("scoring", "Lead Scoring"),
-    ("conversations", "Conversations"),
-    ("dashboard", "Dashboard"),
+    ("leads", "Leads", "list_alt"),
+    ("add_lead", "Add Lead", "person_add"),
+    ("company", "Company Intelligence", "apartment"),
+    ("outreach", "Outreach", "send"),
+    ("scoring", "Lead Scoring", "track_changes"),
+    ("conversations", "Conversations", "chat"),
+    ("dashboard", "Dashboard", "dashboard"),
 ]
 
 _RENDERERS = {

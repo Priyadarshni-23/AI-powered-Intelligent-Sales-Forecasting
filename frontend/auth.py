@@ -137,3 +137,99 @@ def authenticate_user(identifier, password):
         detail = "Login failed."
 
     return False, None, _humanize_validation_errors(detail)
+
+def request_password_reset(email):
+    email = (email or "").strip()
+
+    if not email:
+        return False, "Please enter your email address."
+
+    if not EMAIL_RE.match(email):
+        return False, "Please enter a valid email address, like name@example.com."
+
+    try:
+        response = requests.post(
+            f"{API_BASE}/auth/forgot-password",
+            json={"email": email},
+            timeout=10,
+        )
+    except requests.exceptions.ConnectionError:
+        return False, (
+            "Could not connect to the backend. Please make sure your FastAPI "
+            "backend is running on http://127.0.0.1:8000."
+        )
+
+    if response.status_code == 200:
+        try:
+            message = response.json().get(
+                "message",
+                "If an account with that email exists, a password reset link has been sent.",
+            )
+        except Exception:
+            message = "If an account with that email exists, a password reset link has been sent."
+        return True, message
+
+    try:
+        detail = response.json().get("detail", "Something went wrong. Please try again.")
+    except Exception:
+        detail = "Something went wrong. Please try again."
+
+    return False, _humanize_validation_errors(detail)
+
+
+def reset_password_with_token(token, new_password, confirm_password):
+    token = (token or "").strip()
+    new_password = new_password or ""
+    confirm_password = confirm_password or ""
+
+    if not token:
+        return False, "Invalid reset link."
+
+    if not new_password or not confirm_password:
+        return False, "Please fill in both password fields."
+
+    if len(new_password) < 6:
+        return False, "Password must be at least 6 characters."
+
+    if new_password != confirm_password:
+        return False, "Passwords do not match."
+
+    try:
+        response = requests.post(
+            f"{API_BASE}/auth/reset-password",
+            json={"token": token, "new_password": new_password},
+            timeout=10,
+        )
+    except requests.exceptions.ConnectionError:
+        return False, (
+            "Could not connect to the backend. Please make sure your FastAPI "
+            "backend is running on http://127.0.0.1:8000."
+        )
+
+    if response.status_code == 200:
+        try:
+            message = response.json().get("message", "Your password has been reset successfully.")
+        except Exception:
+            message = "Your password has been reset successfully."
+        return True, message
+
+    # The backend intentionally returns the same generic message for
+    # invalid, expired, and already-used tokens (400/401/403/404) so we
+    # don't try to distinguish those cases here either.
+    if response.status_code in (400, 401, 403, 404):
+        try:
+            detail = response.json().get("detail", "")
+        except Exception:
+            detail = ""
+        return False, detail or (
+            "This reset link is invalid or has expired. Please request a new password reset link."
+        )
+
+    if response.status_code == 422:
+        try:
+            detail = response.json().get("detail", "Please check your input and try again.")
+        except Exception:
+            detail = "Please check your input and try again."
+        return False, _humanize_validation_errors(detail)
+
+    return False, "Something went wrong on our end. Please try again in a moment."

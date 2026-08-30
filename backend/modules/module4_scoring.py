@@ -11,9 +11,7 @@ from database.models import Lead, LeadScore
 router = APIRouter(prefix="/scoring", tags=["Lead Scoring"])
 
 
-# ============================================================
 # Pydantic Models
-# ============================================================
 
 class LeadScoreResponse(BaseModel):
     id: int
@@ -38,10 +36,8 @@ class LeadScoreUpdateRequest(BaseModel):
     next_best_action: Optional[str] = None
 
 
-# ============================================================
 # 1. Generate AI Lead Score
 # POST /scoring/generate/{lead_id}
-# ============================================================
 
 @router.post(
     "/generate/{lead_id}",
@@ -52,9 +48,7 @@ def generate_lead_score(
     db: Session = Depends(get_db)
 ):
 
-    # --------------------------------------------------------
     # Find Lead
-    # --------------------------------------------------------
 
     lead = (
         db.query(Lead)

@@ -11,9 +11,7 @@ from database.models import Lead, SalesInteraction
 router = APIRouter(prefix="/summary", tags=["Meeting Summary"])
 
 
-# --------------------------------------------------
 # Pydantic Models
-# --------------------------------------------------
 
 class SalesInteractionResponse(BaseModel):
     id: int

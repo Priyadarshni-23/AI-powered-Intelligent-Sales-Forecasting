@@ -40,7 +40,6 @@ def ask_gemini(prompt: str):
 
 
 def ask_gemini_json(prompt: str):
-
     try:
         response = client.models.generate_content(
             model="gemini-3.6-flash",

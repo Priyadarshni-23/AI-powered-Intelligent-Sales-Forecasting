@@ -7,16 +7,15 @@ from modules import module4_scoring
 from modules import module5_crm
 from modules import module5_summary
 from modules import module6_dashboard
-from modules import module7_auth
+from modules import module6_analytics
+from modules.module7_auth import router as auth_router
 
+# Create all tables defined in models.py (if they don't already exist)
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title="SalesGenie AI",
-    description="AI-powered Sales Assistant",
-    version="1.0"
-)
+app = FastAPI(title="SalesGenie AI", description="AI-powered Sales Assistant", version="1.0")
 
+# Register Modules
 app.include_router(module1_leads.router)
 app.include_router(module2_analysis.router)
 app.include_router(module3_email.router)
@@ -24,8 +23,8 @@ app.include_router(module4_scoring.router)
 app.include_router(module5_crm.router)
 app.include_router(module5_summary.router)
 app.include_router(module6_dashboard.router)
-app.include_router(module7_auth.router)
-
+app.include_router(module6_analytics.router)
+app.include_router(auth_router)
 
 @app.get("/")
 def root():

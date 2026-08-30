@@ -3,7 +3,7 @@ import time
 import streamlit as st
 import streamlit.components.v1 as components
 from pathlib import Path
-from auth import create_user, authenticate_user
+from auth import create_user, authenticate_user, request_password_reset, reset_password_with_token
 
 APP_DIR = Path(__file__).resolve().parent
 
@@ -175,7 +175,7 @@ def _render_splash():
 <body>
     <div class="splash-outer">
         <div class="splash-wrap">
-            <div class="splash-title">Welcome to SalesGenie AI</div>
+            <div class="splash-title">Welcome to AI Sales Forecast</div>
             <div class="splash-subtitle">Turning your leads into revenue</div>
 
             <div class="growth-stage">
@@ -278,8 +278,8 @@ def _brand_panel():
     st.markdown(
         """
         <div class="login-brand-panel">
-            <div class="login-brand-avatar">SG</div>
-            <h1>SalesGenie AI</h1>
+            <div class="login-brand-avatar">AF</div>
+            <h1>AI Sales Forecast</h1>
             <p class="login-brand-tag">
                 Your AI-powered sales assistant &mdash; qualify leads, write
                 outreach, and track your pipeline in one place.
@@ -318,14 +318,19 @@ def _render_login_form():
         )
         submitted = st.form_submit_button("Log In", use_container_width=True)
 
-        if submitted:
-            ok, user, error = authenticate_user(identifier, password)
-            if ok:
-                st.session_state.authenticated = True
-                st.session_state.current_user = user
-                st.rerun()
-            else:
-                st.error(error)
+    if submitted:
+        ok, user, error = authenticate_user(identifier, password)
+
+        if ok:
+            st.session_state.authenticated = True
+            st.session_state.current_user = user
+            st.rerun()
+        else:
+            st.error(error)
+
+    if st.button("Forgot Password?", key="go_forgot_password_btn", use_container_width=True):
+        st.session_state.auth_mode = "forgot_password"
+        st.rerun()
 
     st.markdown('<div class="login-divider"><span>or</span></div>', unsafe_allow_html=True)
 
@@ -333,7 +338,7 @@ def _render_login_form():
         _try_google_login()
 
     st.markdown(
-        '<p class="login-footer">New to SalesGenie AI?</p>',
+        '<p class="login-footer">New to AI Sales Forecast?</p>',
         unsafe_allow_html=True,
     )
 
@@ -343,7 +348,7 @@ def _render_login_form():
 
 
 def _render_signup_form():
-    _header("Create your account", "Start managing leads with SalesGenie AI")
+    _header("Create your account", "Start managing leads with AI Sales Forecast")
 
     with st.form("signup_form"):
         username = st.text_input("Username", placeholder="janedoe")
@@ -373,8 +378,103 @@ def _render_signup_form():
         st.session_state.auth_mode = "login"
         st.rerun()
 
+def _render_forgot_password_form():
+    _header(
+        "Forgot Password?",
+        "Enter your registered email address and we'll send you a link to reset your password.",
+    )
+
+    with st.form("forgot_password_form"):
+        email = st.text_input("Email", placeholder="you@example.com")
+        submitted = st.form_submit_button("Send Reset Link", use_container_width=True)
+
+        if submitted:
+            with st.spinner("Sending reset link..."):
+                ok, message = request_password_reset(email)
+            if ok:
+                st.session_state.forgot_password_sent = True
+                st.session_state.forgot_password_message = message
+            else:
+                st.session_state.forgot_password_sent = False
+                st.error(message)
+
+    if st.session_state.get("forgot_password_sent"):
+        st.success("Reset link sent successfully.")
+        st.info("Please check your email for the password reset link.")
+
+    if st.button("Back to Login", key="forgot_back_to_login_btn", use_container_width=True):
+        st.session_state.auth_mode = "login"
+        st.session_state.forgot_password_sent = False
+        st.rerun()
+
+
+def _render_reset_password_form():
+    _header("Reset Password", "Choose a new password for your account")
+
+    token = st.session_state.get("reset_token")
+
+    if not token:
+        st.error("Invalid reset link.")
+        if st.button("Request New Reset Link", key="invalid_token_request_new_btn", use_container_width=True):
+            st.session_state.auth_mode = "forgot_password"
+            st.rerun()
+        return
+
+    if st.session_state.get("reset_password_success"):
+        st.success("Password Reset Successfully")
+        st.write("Your password has been updated successfully.")
+        if st.button("Go to Login", key="reset_success_go_login_btn", use_container_width=True):
+            st.session_state.auth_mode = "login"
+            st.session_state.reset_password_success = False
+            st.session_state.reset_token = None
+            st.query_params.clear()
+            st.rerun()
+        return
+
+    with st.form("reset_password_form"):
+        new_password = st.text_input(
+            "New Password", type="password", placeholder="At least 6 characters"
+        )
+        confirm_password = st.text_input(
+            "Confirm Password", type="password", placeholder="Re-enter new password"
+        )
+        submitted = st.form_submit_button("Reset Password", use_container_width=True)
+
+        if submitted:
+            with st.spinner("Resetting your password..."):
+                ok, message = reset_password_with_token(token, new_password, confirm_password)
+            if ok:
+                st.session_state.reset_password_success = True
+                st.rerun()
+            else:
+                is_token_error = "invalid or has expired" in message.lower() or "invalid reset link" in message.lower()
+                st.error(message)
+                if is_token_error:
+                    if st.button(
+                        "Request New Reset Link", key="reset_failed_request_new_btn", use_container_width=True
+                    ):
+                        st.session_state.auth_mode = "forgot_password"
+                        st.session_state.reset_token = None
+                        st.query_params.clear()
+                        st.rerun()
+
+    if st.button("Back to Login", key="reset_back_to_login_btn", use_container_width=True):
+        st.session_state.auth_mode = "login"
+        st.session_state.reset_token = None
+        st.query_params.clear()
+        st.rerun()
+
 
 def show():
+    # If the URL contains a reset token (the user clicked the emailed
+    # reset link), go straight to the reset-password form — skip the
+    # splash screen and whatever auth_mode was previously set.
+    url_token = st.query_params.get("token")
+    if url_token and not st.session_state.get("reset_password_success"):
+        st.session_state.reset_token = url_token
+        st.session_state.auth_mode = "reset_password"
+        st.session_state.splash_shown = True
+
     # ── Splash gate: show once per session before anything else ──────────
     if not st.session_state.get("splash_shown", False):
         _show_splash_then_continue()
@@ -397,7 +497,11 @@ def show():
             with st.container(key="login_form_panel"):
                 if st.session_state.auth_mode == "login":
                     _render_login_form()
-                else:
+                elif st.session_state.auth_mode == "signup":
                     _render_signup_form()
+                elif st.session_state.auth_mode == "forgot_password":
+                    _render_forgot_password_form()
+                elif st.session_state.auth_mode == "reset_password":
+                    _render_reset_password_form()
 
     st.markdown("</div>", unsafe_allow_html=True)

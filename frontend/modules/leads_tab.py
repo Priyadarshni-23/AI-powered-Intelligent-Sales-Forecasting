@@ -498,6 +498,16 @@ def _render_detail_panel():
             _html(
                 """
                 <div class="lead-empty-state">
+                    <div class="lead-empty-icon">
+                        <svg width="42" height="42" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="6" y="6" width="27" height="34" rx="4" fill="var(--brown-50)" stroke="var(--brown-300)" stroke-width="2"/>
+                            <circle cx="14.5" cy="16" r="4" fill="var(--brown-300)"/>
+                            <rect x="9.5" y="24" width="19" height="2.5" rx="1.25" fill="var(--brown-300)"/>
+                            <rect x="9.5" y="29.5" width="13" height="2.5" rx="1.25" fill="var(--brown-300)"/>
+                            <circle cx="32.5" cy="32.5" r="8" fill="#ffffff" stroke="var(--gold-600)" stroke-width="2.5"/>
+                            <line x1="38" y1="38" x2="43.5" y2="43.5" stroke="var(--gold-600)" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
                     <p>
                         Select a lead from the list to view details
                     </p>

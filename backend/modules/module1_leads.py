@@ -20,7 +20,7 @@ from database.models import Lead
 
 router = APIRouter(prefix="/leads", tags=["Leads"])
 
-# ---------- Pydantic Schemas ----------
+# Pydantic Schemas 
 
 class LeadCreate(BaseModel):
     name: str
@@ -85,7 +85,7 @@ class LeadResponse(BaseModel):
         from_attributes = True
 
 
-# ---------- 1. Add Lead ----------
+#  1. Add Lead 
 @router.post("/", response_model=LeadResponse)
 def add_lead(lead: LeadCreate, db: Session = Depends(get_db)):
     # Check for duplicate email (only if an email was provided)
@@ -104,7 +104,7 @@ def add_lead(lead: LeadCreate, db: Session = Depends(get_db)):
     return new_lead
 
 
-# ---------- 2. Get All Leads (with search + pagination) ----------
+# 2. Get All Leads (with search + pagination)
 @router.get("/", response_model=list[LeadResponse])
 def get_all_leads(
     db: Session = Depends(get_db),
@@ -126,7 +126,7 @@ def get_all_leads(
     return query.offset(skip).limit(limit).all()
 
 
-# ---------- 3. Get Lead by ID ----------
+# 3. Get Lead by ID 
 @router.get("/{lead_id}", response_model=LeadResponse)
 def get_lead(lead_id: int, db: Session = Depends(get_db)):
     lead = db.query(Lead).filter(Lead.id == lead_id).first()

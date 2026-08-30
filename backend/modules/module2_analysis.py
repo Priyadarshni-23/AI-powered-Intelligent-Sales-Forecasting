@@ -13,7 +13,6 @@ router = APIRouter(
     tags=["Company Analysis"]
 )
 
-
 class CompanyAnalysisResponse(BaseModel):
     company_name: str
     industry: str
@@ -22,7 +21,6 @@ class CompanyAnalysisResponse(BaseModel):
     engagement_level: str
     insight: str
     opportunity: str
-
 
 @router.post(
     "/generate/{lead_id}",

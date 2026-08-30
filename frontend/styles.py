@@ -118,12 +118,42 @@ def load_css():
         border-right: 1px solid var(--brown-200) !important;
         min-width: 264px !important;
         max-width: 264px !important;
+        transition: min-width 0.22s ease, max-width 0.22s ease !important;
+        overflow-x: hidden !important;
     }
     section[data-testid="stSidebar"] > div {
         padding: 10px 16px 16px 16px !important;
         height: 100vh;
         display: flex;
         flex-direction: column;
+        transition: padding 0.22s ease;
+    }
+    /* Hide the sidebar's scrollbar entirely — it should never show a visible
+       scroll track. The sidebar still scrolls if content is ever taller than
+       the viewport on a very short window, but no track/thumb is painted, so
+       it always reads as a clean, spacious panel like the reference design. */
+    section[data-testid="stSidebar"] > div,
+    section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"],
+    section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+        overflow-y: auto !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    section[data-testid="stSidebar"] > div::-webkit-scrollbar,
+    section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"]::-webkit-scrollbar,
+    section[data-testid="stSidebar"] [data-testid="stSidebarContent"]::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+    /* We drive collapse/expand entirely from our own toggle (the logo),
+       so the native Streamlit collapse arrow is hidden — it would fight
+       with our own state and fully hide the sidebar instead of shrinking
+       it to an icon rail. */
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapseButton"] {
+        display: none !important;
     }
     section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
         height: 100%;
@@ -143,7 +173,7 @@ def load_css():
         display: flex;
         flex-direction: column;
         justify-content: space-evenly;
-        min-height: 220px;
+        min-height: 0;
     }
     .st-key-nav_group [data-testid="stVerticalBlock"] {
         gap: 4px !important;
@@ -197,6 +227,99 @@ def load_css():
         margin: 1px 0 0 0;
         font-weight: 500;
     }
+
+    /* ---------- Sidebar logo (static avatar, no longer a toggle) ---------- */
+    .sidebar-logo-static {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--gold-500) 0%, var(--gold-700) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink-900);
+        font-weight: 800;
+        font-size: 15px;
+        font-family: 'Poppins', 'Inter', sans-serif;
+        box-shadow: 0 6px 16px rgba(224, 168, 62, 0.35);
+        margin: 0 auto;
+    }
+    /* ---------- Sidebar collapse/expand toggle button ----------
+       A dedicated ghost icon button (Material "panel" glyphs), separate
+       from the logo, matching the small toggle shown in the reference. */
+    .st-key-sidebar_toggle button {
+        background: transparent !important;
+        border: 1px solid var(--brown-200) !important;
+        border-radius: 8px !important;
+        color: var(--brown-600) !important;
+        width: 32px !important;
+        min-width: 32px !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+    .st-key-sidebar_toggle button:hover {
+        background: var(--brown-100) !important;
+        border-color: var(--brown-300) !important;
+        color: var(--brown-900) !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    .st-key-sidebar_toggle [data-testid="stIconMaterial"] {
+        font-size: 17px !important;
+    }
+    .sidebar-brand-text {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+    }
+    .sidebar-brand-text h1 {
+        color: var(--brown-900) !important;
+        font-size: 16.5px;
+        margin: 0;
+        font-family: 'Poppins', 'Inter', sans-serif;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .sidebar-brand-text p {
+        color: var(--brown-500);
+        font-size: 10.5px;
+        margin: 3px 0 0 0;
+        font-weight: 500;
+        line-height: 1.35;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    /* Header block (logo + title + collapse toggle) in expanded mode —
+       margin-bottom keeps clear breathing room before the "Leads" tab so
+       the two never look like one connected block. */
+    .st-key-sidebar_header {
+        margin-bottom: 26px !important;
+    }
+    /* Collapsed-only avatar substitute for the user chip */
+    .sidebar-user-avatar-collapsed {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        margin: 4px auto 12px auto;
+        background: linear-gradient(135deg, var(--gold-500) 0%, var(--gold-700) 100%);
+        color: var(--ink-900);
+        font-weight: 800;
+        font-size: 12px;
+        font-family: 'Poppins', 'Inter', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
     .sidebar-live-badge {
         display: inline-flex;
         align-items: center;
@@ -242,6 +365,11 @@ def load_css():
         margin-bottom: 3px !important;
         box-shadow: none !important;
         transform: none !important;
+        gap: 10px !important;
+    }
+    section[data-testid="stSidebar"] .stButton [data-testid="stIconMaterial"] {
+        font-size: 19px !important;
+        color: inherit !important;
     }
     section[data-testid="stSidebar"] .stButton > button p {
         text-align: left !important;
@@ -276,6 +404,15 @@ def load_css():
         border: none;
         border-top: 1px solid var(--brown-200);
         margin: 16px 4px;
+    }
+    /* Separates the collapse/expand toggle from the nav icons below it
+       when the sidebar is collapsed, so the toggle reads as its own
+       control between the logo and the first tab rather than blending
+       into the nav icon list. */
+    .sidebar-divider-collapsed {
+        border: none;
+        border-top: 1px solid var(--brown-200);
+        margin: 12px 10px 14px 10px;
     }
 
     /* ---------- Sidebar user chip + logout ---------- */
@@ -590,8 +727,24 @@ def load_css():
         font-size: 15px;
         height: 460px;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        gap: 18px;
+    }
+    .lead-empty-icon {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        background: var(--brown-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .lead-empty-state p {
+        margin: 0;
+        max-width: 220px;
+        line-height: 1.4;
     }
     .detail-header {
         display: flex;
@@ -2049,6 +2202,135 @@ def load_css():
     .action-priority-pill.priority-medium { background: #faf0d7; color: #b7791f; }
     .action-priority-pill.priority-low { background: #fbe1dc; color: #c0392b; }
 
+    /* =========================================================
+       MOBILE RESPONSIVE LAYER
+       Everything below only kicks in on phone/small-tablet
+       viewports. Desktop layout above is untouched.
+       ========================================================= */
+    @media (max-width: 768px) {
+        html, body, [class*="css"] {
+            font-size: 15px;
+        }
+
+        /* Tighter outer page padding so content isn't cramped
+           against the screen edges. */
+        .block-container {
+            padding-top: 1rem !important;
+            padding-left: 0.9rem !important;
+            padding-right: 0.9rem !important;
+            padding-bottom: 1.25rem !important;
+        }
+
+        /* Stack every side-by-side Streamlit column layout in the
+           main content area into a single column. The sidebar is
+           handled separately (see app.py) and is excluded here. */
+        div[data-testid="stMain"] div[data-testid="stHorizontalBlock"] {
+            flex-wrap: wrap !important;
+            row-gap: 12px !important;
+            column-gap: 0 !important;
+        }
+        div[data-testid="stMain"] div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+            flex: 1 1 100% !important;
+            width: 100% !important;
+            min-width: 100% !important;
+        }
+
+        /* Buttons and inputs get comfortably tappable and use the
+           full available width by default on small screens. */
+        .stButton > button {
+            width: 100%;
+            min-height: 44px;
+        }
+        .stTextInput input, .stTextArea textarea, .stSelectbox [data-baseweb="select"], .stNumberInput input {
+            min-height: 42px;
+        }
+
+        /* Tabs: allow horizontal scroll instead of squeezing/wrapping
+           labels illegibly. */
+        .stTabs [role="tablist"] {
+            overflow-x: auto !important;
+            flex-wrap: nowrap !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        .stTabs [data-testid="stTab"] {
+            flex: 0 0 auto !important;
+        }
+
+        /* Dataframes/tables scroll horizontally rather than overflowing
+           the viewport. */
+        div[data-testid="stDataFrame"], div[data-testid="stTable"] {
+            overflow-x: auto !important;
+            max-width: 100vw;
+        }
+
+        /* Metric cards and KPI stat rows read better stacked full-width
+           on a phone than squeezed into slivers. */
+        div[data-testid="stMetric"] {
+            width: 100% !important;
+        }
+
+        /* Score gauge shrinks a little so it never crowds the score
+           card content next to it once stacked. */
+        .score-gauge-wrap {
+            max-width: 100%;
+        }
+
+        /* Sidebar brand text: keep it legible without pushing the
+           narrower mobile drawer width. */
+        .sidebar-brand-text h1 {
+            font-size: 15px !important;
+        }
+        .sidebar-brand-text p {
+            font-size: 11px !important;
+        }
+
+        /* Login / signup: the marketing side panel is a nice-to-have on
+           desktop but eats the whole screen on mobile, so it gets
+           dropped in favor of just the form. */
+        .st-key-login_shell {
+            max-width: 100% !important;
+            border-radius: 18px !important;
+            margin: 0 12px !important;
+        }
+        .login-brand-panel {
+            display: none !important;
+        }
+        .login-page {
+            padding-top: 16px !important;
+        }
+
+        /* Pipeline board: each stage becomes its own full-width stacked
+           section instead of a cramped horizontal-scroll kanban, with a
+           divider so consecutive stages don't visually run together. */
+        div[data-testid="stMain"] div[data-testid="stHorizontalBlock"]:has(.pipeline-col-header) > div[data-testid="stColumn"] {
+            border-top: 1px solid var(--brown-200);
+            padding-top: 10px;
+            margin-top: 6px;
+        }
+        div[data-testid="stMain"] div[data-testid="stHorizontalBlock"]:has(.pipeline-col-header) > div[data-testid="stColumn"]:first-child {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        /* Two-pane "list + detail" views (e.g. Leads) stack with the
+           list on top, matching the generic column-stacking rule above,
+           but give the detail pane a bit of breathing room once it
+           drops below the list. */
+        div[data-testid="stMain"] div[data-testid="stColumn"] > div[data-testid="stVerticalBlock"] {
+            margin-bottom: 0;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .block-container {
+            padding-left: 0.6rem !important;
+            padding-right: 0.6rem !important;
+        }
+        html, body, [class*="css"] {
+            font-size: 14px;
+        }
+    }
     </style>
 
     """, unsafe_allow_html=True)
