@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+SQLAlchemy
+psycopg2-binary
+pydantic
+email-validator
+python-dotenv
+python-multipart
+pandas
+bcrypt
+python-jose
+google-auth
+google-genai
